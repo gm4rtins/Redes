@@ -1,33 +1,25 @@
 #!/bin/bash
+set -e
 
-# Note: Mininet must be run as root. So invoke this script with sudo.
+# só para garantir que estamos como root
 if [ "$EUID" -ne 0 ]; then
-  echo "⚠️  Please run as root: sudo $0"
+  echo "⚠️  Rode com sudo: sudo $0"
   exit 1
 fi
 
-# duração total do experimento (s)
 TIME=90
-
-# largura de banda do gargalo (Mb/s)
 BW_NET=1.5
-
-# para obter RTT mínimo de ~20 ms:
-# cada link h1–s0 e s0–h2 recebe 5 ms de delay → 
-# one-way = 5+5=10 ms → RTT = 2*10 ms = 20 ms
 DELAY=5
-
-# porta do iperf (se precisar mudar; não é usada no código atual)
-IPERF_PORT=5001
 
 for QSIZE in 20 100; do
     DIR=bb-q${QSIZE}
-    echo "=== Experimento q=$QSIZE pkt → pasta $DIR ==="
+    echo "=== Experimento q=${QSIZE} → ${DIR} ==="
 
-    # (re)cria pasta de saída
-    rm -rf $DIR && mkdir -p $DIR
+    # limpa qualquer resto de Mininet antes de criar a topologia
+    mn -c
 
-    # roda o bufferbloat.py
+    rm -rf ${DIR} && mkdir -p ${DIR}
+
     python3 bufferbloat.py \
         --bw-net ${BW_NET} \
         --delay ${DELAY} \
@@ -36,14 +28,16 @@ for QSIZE in 20 100; do
         --maxq ${QSIZE} \
         --cong reno
 
-    # plota fila e RTT
-    echo "--- Gerando gráfico de fila (q=${QSIZE})"
-    python3 plot_queue.py -f ${DIR}/q.txt -o reno-buffer-q${QSIZE}.png
+    echo "--- Plotando fila"
+    python3 plot_queue.py -f ${DIR}/q.txt  -o reno-buffer-q${QSIZE}.png
 
-    echo "--- Gerando gráfico de RTT (q=${QSIZE})"
+    echo "--- Plotando RTT"
     python3 plot_ping.py  -f ${DIR}/ping.txt -o reno-rtt-q${QSIZE}.png
 
     echo
 done
+
+# Última limpeza geral (opcional)
+mn -c
 
 echo "✅ Todos os experimentos concluídos."
