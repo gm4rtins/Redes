@@ -164,5 +164,5 @@ def bufferbloat():
     Popen("pgrep -f webserver.py | xargs kill -9", shell=True).wait()
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     bufferbloat()
