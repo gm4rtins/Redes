@@ -133,7 +133,7 @@ def bufferbloat():
             break
         # Every 5 seconds, do 3 sequential fetches
         for i in range(3):
-            cmd = "curl -o /dev/null -s -w %{time_total} http://%s:8000/index.html" % h1.IP()
+            cmd = "curl -o /dev/null -s -w %%{time_total} http://%s:8000/index.html" % h1.IP()
             proc = h2.popen(cmd, stdout=PIPE, shell=True)
             out = proc.communicate()[0].decode().strip()
             try:
