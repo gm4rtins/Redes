@@ -9,7 +9,7 @@ fi
 
 TIME=90
 BW_NET=1.5
-DELAY=5
+DELAY=10
 
 for QSIZE in 20 100; do
     DIR=bb-q${QSIZE}
